@@ -2,7 +2,7 @@
 
 An interactive robotics lesson about motor feedback. Inspect a schematic motor, wheel and encoder, predict the effect of load, then compare a fixed drive command with a proportional–integral controller.
 
-[Try the lesson](https://hendersonajardimj.github.io/motorlab/) · [Joshua’s portfolio](https://hendeaux.dev/)
+[Try the lesson](https://hendersonajardimj.github.io/motorlab/) · [Project story](https://hendeaux.dev/projects/motorlab)
 
 ## Try it
 
