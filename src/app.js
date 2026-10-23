@@ -3,9 +3,9 @@ const $=id=>document.getElementById(id),KEY='motorlab-public-progress-v1';
 const defaults=()=>({version:1,step:0,target:100,load:45,limit:1,predFixed:'',predFeedback:'',predictionSnapshot:null,elapsed:0,finished:false,attempts:[],cause:'',action:'',limits:'',transfer:'',note:'',assessment:null,scroll:[0,0,0,0],motion:'auto',reduced:systemReduced,reached:0,updated:null});
 let systemReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let state=defaults(),storageAvailable=true;try{const raw=localStorage.getItem(KEY),parsed=JSON.parse(raw);if(parsed?.version===1){
- // Keep an untouched copy of a record saved before the motion setting existed, once, so the original remains recoverable.
- if(!('motion' in parsed)&&!localStorage.getItem(KEY+'-before-motion-setting'))localStorage.setItem(KEY+'-before-motion-setting',raw);
- state={...state,...parsed,motion:storedMotion(parsed)};}}catch{storageAvailable=false;}
+ state={...state,...parsed,motion:storedMotion(parsed)};
+ // Keep an untouched copy of a record saved before the motion setting existed, once, so the original remains recoverable. A full quota must not cost the loaded lesson.
+ if(!('motion' in parsed))try{if(!localStorage.getItem(KEY+'-before-motion-setting'))localStorage.setItem(KEY+'-before-motion-setting',raw);}catch{}}}catch{storageAvailable=false;}
 state.step=Math.max(0,Math.min(3,Number(state.step)||0));state.target=Math.max(40,Math.min(180,Number(state.target)||100));state.load=Math.max(0,Math.min(100,Number(state.load)||0));state.limit=Math.max(.4,Math.min(1,Number(state.limit)||1));state.elapsed=Math.max(0,Math.min(12,Number(state.elapsed)||0));state.reached=Math.max(state.elapsed,Math.min(12,Number(state.reached)||0));
 let runData=simulate(state),running=false,lastFrame=0,saveAt=0,angleOffset={fixed:0,feedback:0},previewAngle={fixed:0,feedback:0},still=isStill(state.motion,systemReduced);
 const reader=$('lesson'),labels=['UNDERSTAND','PREDICT','EXPERIMENT','EXPLAIN'];
@@ -57,7 +57,7 @@ function updateRunButton(){const button=$('run'),m=mode();
  button.classList.toggle('needs-prediction',!state.predictionSnapshot);
  button.innerHTML=!state.predictionSnapshot?'Make a prediction first →':running?'<span aria-hidden="true">❚❚</span> Pause':m==='done'?'<span aria-hidden="true">▶</span> Run again':state.finished?'<span aria-hidden="true">▶</span> Replay':state.elapsed>0?'<span aria-hidden="true">▶</span> Resume':'<span aria-hidden="true">▶</span> Run load test';
  for(const id of ['target','load','limit','limit-preset'])$(id).disabled=running;
- $('reset').disabled=m==='preview';$('timeline').disabled=state.reached===0;
+ $('reset').disabled=m==='preview';$('timeline').disabled=state.reached===0&&!running;
  $('run-status').textContent=statusText();
  $('run-help').textContent=state.predictionSnapshot?'Identical load on both motors: applied at 4 s, removed at 9 s. Both start from rest.':'Record your prediction in step 02 before running. Load is applied from 4 to 9 seconds.';}
 function startRun(){if(mode()==='done'){clearRun();}

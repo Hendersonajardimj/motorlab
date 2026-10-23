@@ -42,6 +42,7 @@ const run=simulate({target:100,load:45,limit:1});
  check('run: button ready after prediction',/Run load test/.test(await page.textContent('#run')));
  await page.click('#run');await page.waitForTimeout(900);
  check('run: status Running',(await page.textContent('#run-status'))==='Running');
+ check('run: timeline usable during the first run; time output is not a live region',!(await page.$eval('#timeline',e=>e.disabled))&&(await page.getAttribute('#time','aria-live'))==='off');
  const r1=await canvasHashes(page,3,250);check('run: mechanism frames change while running',new Set(r1).size>=3,r1);
  await until(page,4.3);await page.click('#run');await page.waitForTimeout(700);
  const p=await scene(page),t=Number(p.t),smp=sampleAt(run.samples,t);
@@ -105,6 +106,14 @@ const legacy={version:1,step:2,target:100,load:45,limit:1,predFixed:'drop',predF
  await page.click('#motion-on');await page.click('#run');await page.waitForTimeout(400);const a=await scene(page);await page.waitForTimeout(500);const b=await scene(page);
  check('restored: after Show motion, resume turns the wheels',a.wheelAngle!==b.wheelAngle&&Number(b.t)>9.47,[a,b].map(s=>[s.t,s.wheelAngle]));
  check('restored: no console errors',errors.length===0,errors);await ctx.close();}
+
+// 3b. Storage too full for the one-time copy: the saved lesson must still load and must not be overwritten.
+{const raw=JSON.stringify(legacy),ctx=await browser.newContext({viewport:{width:1280,height:720}});
+ await ctx.addInitScript(([k,v])=>{if(!sessionStorage.getItem('seeded')){localStorage.setItem(k,v);sessionStorage.setItem('seeded','1');}const set=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key===k+'-before-motion-setting')throw new DOMException('Quota exceeded','QuotaExceededError');return set.call(this,key,value);};},[KEY,raw]);
+ const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));await page.goto(base,{waitUntil:'networkidle'});await page.waitForSelector('#scene[data-mode]');await page.waitForTimeout(400);
+ const st=await page.evaluate(k=>({stored:JSON.parse(localStorage.getItem(k)),backup:localStorage.getItem(k+'-before-motion-setting'),time:document.getElementById('time').textContent,step:document.getElementById('step-label').textContent}),KEY);
+ check('quota: lesson still loads and is kept when the copy cannot be written',st.backup===null&&st.stored.elapsed===9.47&&st.stored.note==='kept note'&&st.stored.step===2&&st.time.startsWith('9.47')&&st.step.startsWith('03')&&errors.length===0,{time:st.time,step:st.step,errors});
+ await ctx.close();}
 
 // 4. Forced 2D fallback.
 {const {ctx,page,errors}=await open('fallback',{path:'?fallback=1'});
