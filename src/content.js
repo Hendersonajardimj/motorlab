@@ -5,7 +5,7 @@ export const passages=[
  'A feedback controller compares target speed with measured speed. The difference is the error. A proportional and integral controller can increase drive to compensate for a sustained load, as long as enough drive is available.',
  'Before running the experiment, predict what happens when the load arrives. Both virtual motors start from rest with the same target and model. Only the control strategy differs.',
  'The fixed command stays constant. Feedback uses the measured speed to adjust drive. Neither strategy can produce more drive than the selected ceiling. Think about capacity as well as correction.',
- 'The experiment lasts twelve seconds. Load starts at four seconds and ends at nine. Watch the speed graph and the drive readout. The wheel on screen represents the feedback motor.',
+ 'The experiment lasts twelve seconds. Load starts at four seconds and ends at nine. Watch both motors, the speed graph and the drive trace. The fixed-command motor keeps one drive setting; the feedback motor changes its drive.',
  'Compare the average speeds during the last second of load. Then try an unreachable target. If the motor is already at its drive ceiling, the controller cannot restore the requested speed under that load.',
  'Explain the result as a chain of causes: load changed the motor response, the encoder measured the new speed, and the controller used the speed error to adjust drive. Include what the drive ceiling prevented.',
  'The local coach checks four selected causal statements. It saves your written note without pretending to understand it. The experiment and your explanation are evidence for this lesson, not proof of real hardware performance.'
